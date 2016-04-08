@@ -1,4 +1,4 @@
-angular.module('iTuneBrowserApp', ['ngRoute'])
+angular.module('iTuneBrowserApp', ['ngRoute', 'ui.bootstrap'])
 
 .config(function($routeProvider, $locationProvider) {
     $routeProvider
@@ -20,12 +20,14 @@ angular.module('iTuneBrowserApp', ['ngRoute'])
                 $location.path("/about");
             }
         }).when('/', {
-            controller: function($location){$location.path("/browse/u2");},
+            controller: function($location) {
+                $location.path("/browse/u2");
+            },
             templateUrl: 'page/browser.html'
         }).when('/browse/:search', {
-          controller: 'BrowserController',
-          templateUrl: 'page/browser.html'
-      });
+            controller: 'BrowserController',
+            templateUrl: 'page/browser.html'
+        });
 })
 
 .controller('LoginCtrl', function($scope) {
@@ -39,32 +41,34 @@ angular.module('iTuneBrowserApp', ['ngRoute'])
         window.open(url, '_blank');
     };
 })
-
 .controller('BrowserController', function($scope, $location, $http, $routeParams) {
-    $scope.init = function(){
+    $scope.init = function() {
         $scope.medias = [];
-        $scope.filter = {};
-        $scope.offset = 20;
-        $scope.page   = 1;
-        $scope.orderBy= ['name', 'code'];
+        $scope.itemsPerPage = 24;
+        $scope.page = 1;
+        $scope.maxSize = 5;
+        $scope.types = [{label: 'Music', kind: 'song'}, {label: 'Video', kind: 'music-video'}];
 
-        if($routeParams.search){
-            $http.jsonp('https://itunes.apple.com/search?term='+$routeParams.search)
-                .success(function(data, status, headers, config){
-                    $scope.medias = data.results;
-                }).error(function(data, status, headers, config) {
-                    alert('Failed to fetch data from iTunes');
-                });
-
-            $http.jsonp("http://itunes.apple.com/search", {
-              params: {
-                "callback": "JSON_CALLBACK",
-                 "term": $routeParams.search
-              },
-              paramsSerializer: function(param) {
-                return param;
-              }
+        if ($routeParams.search) {
+            $http.jsonp("https://itunes.apple.com/search", {
+                params: {
+                    "limit": 50,
+                    "callback": "JSON_CALLBACK",
+                    "term": $routeParams.search
+                },
+                paramsSerializer: function(param) {
+                    return param;
+                }
+            }).success(function(data, status, headers, config) {
+                $scope.medias = data.results;
+            }).error(function(data, status, headers, config) {
+                alert('Failed to fetch data from iTunes');
             });
+        }
+
+        $scope.play = function(){}
+        $scope.buy = function(track){
+            window.open(track.trackViewUrl, '_blank');
         }
     }
 })
@@ -75,4 +79,11 @@ angular.module('iTuneBrowserApp', ['ngRoute'])
         return input.slice(start);
     }
 })
+.filter('textLimit', function() {
+    return function(input, limit) {
+        if(input.length <= limit) return input
+        else return input.substr(0,limit) + ' ...';
+    }
+})
+
 ;
