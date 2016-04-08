@@ -1,0 +1,24 @@
+<div ng-init="init()">
+    <div class="row">
+        <div class="col-sm-12" ng-show="medias.length == 0">No Results...</div>
+        <div class="col-sm-6 col-md-4" ng-repeat="track in medias | filter:filter | startFrom:(page-1)*offset | limitTo:offset | orderBy:(orderBy?orderBy:[]) track by $index">
+            <div class="thumbnail">
+                <img ng-src="artworkUrl100">
+                <div class="caption">
+                    <h3>{{track.trackName}}</h3>
+                    <p>{{track.collectionName}}</p>
+                    <p><a href="#" class="btn btn-primary" role="button">Play</a> <a href="#" class="btn btn-default" role="button">Buy</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="pull-right">
+    <ul class="pagination">
+        <li class="{{page <= 1 ? 'disabled' : ''}}"><a href="" ng-click="page = 1">&laquo;&laquo;</a></li>
+        <li class="{{page <= 1 ? 'disabled' : ''}}"><a href="" ng-click="pagination.prev()">&laquo;</a></li>
+        <li class="active"><a href="">{{page}}</a></li>
+        <li class="{{(pagination.eop && medias.length <= ((page) * offset)) || medias.length <= 0 ? 'disabled' : ''}}"><a href="" ng-click="pagination.next()">&raquo;</a></li>
+        <li class="{{medias.length <= 0 || page == pagination.pages.length ? 'disabled' : ''}}"><a href="" ng-click="page = pagination.pages.length > 0 ? pagination.pages.length : 1">&raquo;&raquo;</a></li>
+    </ul>
+</div>
