@@ -31,7 +31,7 @@ angular.module('iTuneBrowserApp', ['ngRoute', 'ui.bootstrap'])
 
     // Register the HTTP INTERCEPTORS
     $httpProvider.interceptors.push(function($q, $window, $rootScope) {
-        var loadingScreen = jQuery('<div class="app-overlay"><span></span></div>').appendTo(jQuery('body')).hide();
+        var loadingScreen = jQuery('<div class="app-overlay"><span class="loading"></span></div>').appendTo(jQuery('body')).hide();
         return {
             'request': function(config) {
                 loadingScreen.show();
@@ -61,7 +61,7 @@ angular.module('iTuneBrowserApp', ['ngRoute', 'ui.bootstrap'])
         window.open(url, '_blank');
     };
 })
-.controller('BrowserController', function($scope, $location, $routeParams, filterFilter, SearchService) {
+.controller('BrowserController', function($scope, $location, $routeParams, $compile, filterFilter, SearchService) {
     $scope.init = function() {
         $scope.medias = [];
         $scope.itemsPerPage = 24;
@@ -88,7 +88,12 @@ angular.module('iTuneBrowserApp', ['ngRoute', 'ui.bootstrap'])
         console.log($scope.totalItems);
     }
 
-    $scope.play = function(){}
+    $scope.play = function(track){
+        var player = jQuery('<div ib-player>')
+                        .attr('media-src', track.previewUrl).attr('media-kind', track.kind).attr('media-name', track.trackName)
+                        .appendTo(jQuery('body'));
+        $compile(player)($scope);
+    }
     $scope.buy = function(track){
         window.open(track.trackViewUrl, '_blank');
     }
@@ -108,6 +113,31 @@ angular.module('iTuneBrowserApp', ['ngRoute', 'ui.bootstrap'])
                 }
             })
             .success(callback);
+        }
+    }
+})
+
+.directive('ibPlayer', function($compile){
+    return {
+        restrict: 'A',
+        scope: {
+            src: '@mediaSrc',
+            kind: '@mediaKind',
+            name: '@mediaName'
+        },
+        link: function(scope, element){
+            scope.$watch('src', function() {
+                var kind = scope.kind == 'music-video' ? 'video' : 'audio';
+                var template = '<div class="app-overlay" ng-click="outFocus()">';
+                   template += '<' + kind+' src="'+scope.src+'" controls class="player" preload="auto" autoplay><p>Your browser does not support the HTML5 media element.</p>';
+                   template += '</'+kind+'></div></div>';
+                var linkFn = $compile(template);
+                element.html(linkFn(scope));
+            });
+
+            scope.outFocus = function(){
+                element.remove();
+            }
         }
     }
 })
