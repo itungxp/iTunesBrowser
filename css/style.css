@@ -1,0 +1,26 @@
+.thumbnail{
+    font-size: 12px;
+    border: none;
+    margin-bottom: 0px;
+    height: 220px;
+}
+.thumbnail .title {
+    font-weight: bold;
+    color: #4c4c4c
+}
+.thumbnail .description {
+    color: #999
+}
+.thumbnail .price {
+    color: #08c
+}
+.thumbnail .caption > img {
+    margin-left: 0px;
+    box-shadow: 0 0 4px 0px rgba(0, 0, 0, 0.4);
+}
+.thumbnail .btn {
+    margin-top: 5px;
+}
+.filter {
+    margin: 20px 0;
+}
