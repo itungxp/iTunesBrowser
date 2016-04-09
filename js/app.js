@@ -1,29 +1,27 @@
-angular.module('iTuneBrowserApp', ['ngRoute', 'ui.bootstrap'])
+angular.module('iTuneBrowserApp', ['ngRoute', 'ui.bootstrap', 'ngCookies'])
 
 .config(function($routeProvider, $locationProvider, $httpProvider) {
+    var defaultPage = '/browse/U2';
     $routeProvider
         .when('/access_token=:accessToken', {
             template: '',
-            controller: function($location, $rootScope) {
-                var hash = $location.path().substr(1);
-
-                var splitted = hash.split('&');
+            controller: function($location, $rootScope, $cookies) {
                 var params = {};
-
+                var splitted = $location.path().substr(1).split('&');
                 for (var i = 0; i < splitted.length; i++) {
                     var param = splitted[i].split('=');
-                    var key = param[0];
-                    var value = param[1];
-                    params[key] = value;
-                    $rootScope.accesstoken = params;
+                    params[param[0]] = param[1];
                 }
-                $location.path('/about');
+
+                $cookies.put('ibToken', params['access_token'], {expires: new Date(new Date().getTime() + parseInt(params['expires_in'])*1000)});
+                $location.path(defaultPage);
             }
         }).when('/', {
-            controller: function($location) {
-                $location.path('/browse/u2');
-            },
-            templateUrl: 'page/browser.html'
+            template: '',
+            controller: function($location){ $location.path(defaultPage); }
+        }).when('/login', {
+            controller: 'LoginCtrl',
+            templateUrl: 'page/login.html'
         }).when('/browse/:search', {
             controller: 'BrowserController',
             templateUrl: 'page/browser.html'
@@ -49,17 +47,23 @@ angular.module('iTuneBrowserApp', ['ngRoute', 'ui.bootstrap'])
         };
     });
 })
+.run(function ($location, $cookies) {
+    if($location.path().indexOf('access_token') < 0 && !$cookies.get('ibToken')){
+        $location.path('/login');
+    }
+})
 
-.controller('LoginCtrl', function($scope) {
-    $scope.login = function() {
-        var client_id = 'your client id';
+.controller('LoginCtrl', function($scope, $location, $cookies) {
+    if(!$cookies.get('ibToken')){
+        var client_id = '375982416217-27025grmutguul2p3ndf1dv5l8srp3ck.apps.googleusercontent.com'; // Change to Production id
+        var redirect_uri = 'http://localhost:63342/iTunesBrowser/'; // Change to Production url
         var scope = 'email';
-        var redirect_uri = 'index.html';
         var response_type = 'token';
-        var url = 'https://accounts.google.com/o/oauth2/auth?scope=' + scope + '&client_id=' + client_id + '&redirect_uri=' + redirect_uri +
-            '&response_type=' + response_type;
-        window.open(url, '_blank');
-    };
+        var url = 'https://accounts.google.com/o/oauth2/auth?scope=' + scope + '&client_id=' + client_id + '&response_type=' + response_type + '&redirect_uri=' + redirect_uri;
+        window.location.replace(url);
+    } else {
+        $location.path(defaultPage);
+    }
 })
 .controller('BrowserController', function($scope, $location, $routeParams, $compile, filterFilter, SearchService) {
     $scope.init = function() {
@@ -107,9 +111,6 @@ angular.module('iTuneBrowserApp', ['ngRoute', 'ui.bootstrap'])
                     'entity': kind,
                     'callback': 'JSON_CALLBACK',
                     'term': term
-                },
-                paramsSerializer: function(param) {
-                    return param;
                 }
             })
             .success(callback);
