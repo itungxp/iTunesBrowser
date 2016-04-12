@@ -1,15 +1,13 @@
 <div ng-init="init()">
     <div class="row">
         <div class="col-sm-4">
-            <input type="text" ng-model="filter.trackName" class="form-control filter" placeholder="Track Name">
+            <input type="text" ng-model="filter.trackName" class="form-control filter" placeholder="Track Name" ng-change="filterChange()">
         </div>
         <div class="col-sm-2">
-            <select class="form-control filter" ng-model="filter.kind" ng-options="type.kind as type.label for type in types track by type.kind">
-                <option value="">All</option>
-            </select>
+            <select class="form-control filter" ng-model="kind" ng-options="type.kind as type.label for type in types track by type.kind" ng-change="search()"></select>
         </div>
         <div class="col-sm-6">
-            <uib-pagination total-items="medias.length" ng-model="page" ng-change="pageChanged()" class="pull-right"
+            <uib-pagination total-items="totalItems" ng-model="page" ng-change="pageChanged()" class="pull-right"
                             boundary-links="true" class="pagination" items-per-page="itemsPerPage" max-size="maxSize" >
             </uib-pagination>
         </div>
@@ -17,7 +15,7 @@
     <div class="row">
         <div class="col-sm-12" ng-show="medias.length == 0">No Results...</div>
         <div class="col-xs-6 col-sm-3 col-md-2"
-             ng-repeat="track in medias | filter:filter | startFrom:(page-1)*itemsPerPage | limitTo:itemsPerPage track by $index">
+             ng-repeat="track in medias | filter:filter | limitTo:itemsPerPage:(page-1)*itemsPerPage track by $index">
             <div class="thumbnail">
                 <div class="caption">
                     <img ng-src="{{track.artworkUrl100}}" title="{{track.trackName}}" />
@@ -28,6 +26,13 @@
                         <button class="btn btn-default" ng-click="buy(track)">Buy</button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <uib-pagination total-items="totalItems" ng-model="page" ng-change="pageChanged()" class="pull-right"
+                            boundary-links="true" class="pagination" items-per-page="itemsPerPage" max-size="maxSize" >
+            </uib-pagination>
         </div>
     </div>
 </div>
